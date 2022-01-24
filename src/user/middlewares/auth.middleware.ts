@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { ExpressRequest } from '@app/types/expressRequest.interface';
-import { Injectable, NestMiddleware, Req } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { verify } from 'jsonwebtoken';
 import { UserService } from '../user.service';
