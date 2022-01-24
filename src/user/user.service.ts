@@ -7,6 +7,8 @@ import { UserEntity } from './user.entity';
 import { sign } from 'jsonwebtoken';
 import 'dotenv';
 import { UserResponseInterface } from './types/userResponse.interface';
+import { LoginDTO } from './dto/login.dto';
+import { compare } from 'bcrypt';
 @Injectable()
 export class UserService {
   constructor(
@@ -36,6 +38,40 @@ export class UserService {
     return await this.userRepository.save(newUser);
   }
 
+  async login({ email, password }: LoginDTO): Promise<UserEntity> {
+    const incorrectCredentialsMessage = `Incorrect email or password. Please check your credentials.`;
+
+    const user = await this.userRepository.findOne(
+      {
+        email,
+      },
+      { select: ['id', 'username', 'email', 'image', 'bio', 'password'] },
+    );
+
+    if (!user) {
+      throw new HttpException(
+        incorrectCredentialsMessage,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const passwordMatch = await compare(password, user.password);
+
+    if (!passwordMatch) {
+      throw new HttpException(
+        incorrectCredentialsMessage,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    delete user.password;
+    return user;
+  }
+
+  async findById(id: string): Promise<UserEntity> {
+    return this.userRepository.findOne(id);
+  }
+
   generateJWT(user: UserEntity): string {
     return sign(
       {
@@ -48,8 +84,6 @@ export class UserService {
   }
 
   buildUserResponse(user: UserEntity): UserResponseInterface {
-    delete user.password;
-
     return {
       user: {
         ...user,
