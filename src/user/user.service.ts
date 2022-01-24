@@ -9,6 +9,7 @@ import 'dotenv';
 import { UserResponseInterface } from './types/userResponse.interface';
 import { LoginDTO } from './dto/login.dto';
 import { compare } from 'bcrypt';
+import { UpdateUserDTO } from './dto/updateUser.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -66,6 +67,13 @@ export class UserService {
 
     delete user.password;
     return user;
+  }
+
+  async update(
+    user: UserEntity,
+    updateUserDTO: UpdateUserDTO,
+  ): Promise<UserEntity> {
+    return this.userRepository.save({ ...user, ...updateUserDTO });
   }
 
   async findById(id: string): Promise<UserEntity> {
