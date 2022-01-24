@@ -5,7 +5,6 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
 
 export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
