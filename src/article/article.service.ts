@@ -1,7 +1,7 @@
 import { UserEntity } from '@app/user/user.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { ArticleEntity } from './article.entity';
 import { CreateArticleDTO } from './dto/createArticle.dto';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
@@ -45,6 +45,29 @@ export class ArticleService {
     }
 
     return article;
+  }
+
+  async deleteArticle(
+    currentUserId: string,
+    slug: string,
+  ): Promise<DeleteResult> {
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new HttpException(
+        'No article matching the given slug was found.',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    if (article.author.id !== currentUserId) {
+      throw new HttpException(
+        `Your id does not match author's id.`,
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return await this.articleRepository.delete({ slug });
   }
 
   buildArticleResponse(article: ArticleEntity): ArticleResponseInterface {
