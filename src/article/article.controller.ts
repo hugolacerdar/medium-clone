@@ -10,6 +10,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { DeleteResult } from 'typeorm';
 import { ArticleService } from './article.service';
 import { CreateArticleDTO } from './dto/createArticle.dto';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
@@ -37,5 +38,14 @@ export class ArticleController {
     );
 
     return await this.articleService.buildArticleResponse(article);
+  }
+
+  @Delete(':slug')
+  @UseGuards(AuthGuard)
+  async delete(
+    @User('id') currentUserId: string,
+    @Param('slug') slug: string,
+  ): Promise<DeleteResult> {
+    return await this.articleService.deleteArticle(currentUserId, slug);
   }
 }
