@@ -12,7 +12,7 @@ export class ArticleEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   slug: string;
 
   @Column()
