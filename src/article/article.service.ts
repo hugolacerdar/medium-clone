@@ -141,6 +141,43 @@ export class ArticleService {
     });
   }
 
+  async addArticleToFavorites(
+    slug: string,
+    currentUserId: string,
+  ): Promise<ArticleEntity> {
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new HttpException(
+        'No article matching the given slug was found.',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const user = await this.userRepository.findOne(currentUserId, {
+      relations: ['favorites'],
+    });
+
+    const isNotFavorited =
+      user.favorites.findIndex(
+        (articleInFav) => articleInFav.id === article.id,
+      ) === -1;
+
+    if (isNotFavorited) {
+      user.favorites.push(article);
+      article.favoritesCount++;
+      await this.userRepository.save(user);
+      await this.articleRepository.save(article);
+    } else {
+      throw new HttpException(
+        'You already favorited that article.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return article;
+  }
+
   buildArticleResponse(article: ArticleEntity): ArticleResponseInterface {
     return { article };
   }
