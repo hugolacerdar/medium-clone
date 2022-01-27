@@ -178,6 +178,42 @@ export class ArticleService {
     return article;
   }
 
+  async removeArticleFromFavorites(
+    slug: string,
+    currentUserId: string,
+  ): Promise<ArticleEntity> {
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new HttpException(
+        'No article matching the given slug was found.',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const user = await this.userRepository.findOne(currentUserId, {
+      relations: ['favorites'],
+    });
+
+    const articleIndex = user.favorites.findIndex(
+      (articleInFav) => articleInFav.id === article.id,
+    );
+
+    if (articleIndex >= 0) {
+      user.favorites.splice(articleIndex, 1);
+      article.favoritesCount--;
+      await this.userRepository.save(user);
+      await this.articleRepository.save(article);
+    } else {
+      throw new HttpException(
+        'You have not favorited that article.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return article;
+  }
+
   buildArticleResponse(article: ArticleEntity): ArticleResponseInterface {
     return { article };
   }
